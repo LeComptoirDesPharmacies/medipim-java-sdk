@@ -19,8 +19,7 @@ jobs:
           architecture: x64
       - name: Run the Maven verify phase
         run: mvn --batch-mode --update-snapshots verify
-      - run: mkdir deploy && cp target/*.jar deploy
       - uses: actions/upload-artifact@v3
         with:
           name: Package
-          path: deploy
+          path: target/*.jar
