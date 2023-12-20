@@ -54,9 +54,14 @@
     </dependencies>
 
     <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh-snapshot</id>
+            <name>Central Repository OSSRH Snapshots</name>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
         <repository>
             <id>ossrh</id>
-            <name>Central Repository OSSRH</name>
+            <name>Central Repository OSSRH Releases</name>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
