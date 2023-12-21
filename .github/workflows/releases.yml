@@ -1,10 +1,9 @@
 on:
   push:
-    branches:
-      - 'develop'
-      - 'features/*'
+    tags:
+      - '*'
 
-name: Create Snapshot of App
+name: Create Release of App
 
 jobs:
   Package_app:
@@ -17,7 +16,7 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           architecture: x64
-          server-id: ossrh-snapshot
+          server-id: ossrh
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
       - name: Run the Maven verify phase
