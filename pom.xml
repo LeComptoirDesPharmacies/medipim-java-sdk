@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>fr.lcdp</groupId>
+    <groupId>fr.lecomptoirdespharmacies</groupId>
     <artifactId>medipim-java-sdk</artifactId>
     <version>0</version>
     <packaging>jar</packaging>
@@ -33,13 +33,7 @@
             <artifactId>jackson-databind-nullable</artifactId>
             <version>0.2.3</version>
         </dependency>
-
-        <dependency>
-            <groupId>javax.inject</groupId>
-            <artifactId>javax.inject</artifactId>
-            <version>1</version>
-        </dependency>
-
+    
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -54,9 +48,14 @@
     </dependencies>
 
     <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh-snapshot</id>
+            <name>Central Repository OSSRH Snapshots</name>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
         <repository>
             <id>ossrh</id>
-            <name>Central Repository OSSRH</name>
+            <name>Central Repository OSSRH Releases</name>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
