@@ -128,7 +128,8 @@ public class MedipimProductsApi extends MedipimApi {
         List<QueryFilter> barcodeFilters = new ArrayList<>();
 
 
-        if (StringUtils.startsWith(barcode, "3400")) {
+        if (StringUtils.isNumeric(barcode) &&
+            StringUtils.startsWith(barcode, "3400") ) {
             barcodeFilters.add(
                     new QueryFilter.QueryFilterBuilder()
                             .cip13(StringUtils.left(barcode, 13))
@@ -136,7 +137,8 @@ public class MedipimProductsApi extends MedipimApi {
             );
         }
 
-        if (StringUtils.startsWith(barcode, "3401")) {
+        if (StringUtils.isNumeric(barcode) &&
+            StringUtils.startsWith(barcode, "3401")) {
             barcodeFilters.add(
                     new QueryFilter.QueryFilterBuilder()
                             .acl13(StringUtils.left(barcode, 13))
@@ -150,11 +152,13 @@ public class MedipimProductsApi extends MedipimApi {
                         .build()
         );
 
-        barcodeFilters.add(
-                new QueryFilter.QueryFilterBuilder()
-                        .cipOrAcl7(StringUtils.left(barcode, 7))
-                        .build()
-        );
+        if (StringUtils.isNumeric(barcode)) {
+            barcodeFilters.add(
+                    new QueryFilter.QueryFilterBuilder()
+                            .cipOrAcl7(StringUtils.left(barcode, 7))
+                            .build()
+            );
+        }
 
 
         QueryFilter filter = new QueryFilter.QueryFilterBuilder()
