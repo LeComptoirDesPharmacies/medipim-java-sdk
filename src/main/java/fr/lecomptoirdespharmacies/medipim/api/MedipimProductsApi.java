@@ -129,7 +129,8 @@ public class MedipimProductsApi extends MedipimApi {
 
 
         if (StringUtils.isNumeric(barcode) &&
-            StringUtils.startsWith(barcode, "3400") ) {
+            StringUtils.startsWith(barcode, "3400") &&
+            StringUtils.length(barcode) >= 13) {
             barcodeFilters.add(
                     new QueryFilter.QueryFilterBuilder()
                             .cip13(StringUtils.left(barcode, 13))
@@ -138,7 +139,9 @@ public class MedipimProductsApi extends MedipimApi {
         }
 
         if (StringUtils.isNumeric(barcode) &&
-            StringUtils.startsWith(barcode, "3401")) {
+            StringUtils.startsWith(barcode, "3401") &&
+            StringUtils.length(barcode) >= 13
+        ) {
             barcodeFilters.add(
                     new QueryFilter.QueryFilterBuilder()
                             .acl13(StringUtils.left(barcode, 13))
