@@ -155,7 +155,9 @@ public class MedipimProductsApi extends MedipimApi {
                         .build()
         );
 
-        if (StringUtils.isNumeric(barcode)) {
+        if (StringUtils.isNumeric(barcode) &&
+            !Objects.equals(barcode, "0")// cipOrAcl7 consider the value '0' as empty value. (See : LDS-3337)
+        ) {
             barcodeFilters.add(
                     new QueryFilter.QueryFilterBuilder()
                             .cipOrAcl7(StringUtils.left(barcode, 7))
