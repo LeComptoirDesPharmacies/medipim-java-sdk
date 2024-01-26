@@ -11,6 +11,7 @@ import fr.lecomptoirdespharmacies.medipim.api.query.products.Query;
 import fr.lecomptoirdespharmacies.medipim.api.query.products.QueryFilter;
 import fr.lecomptoirdespharmacies.medipim.api.query.products.QuerySorting;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.OffsetDateTime;
@@ -117,8 +118,27 @@ public class MedipimProductsApi extends MedipimApi {
 
 
     public MedipimProduct searchProductByBarcode(String barcode) {
-        return postProductStream(buildSearchProductByBarcodeQuery(barcode))
+        return getMostMatchedMedipimProduct(
+                    postProductStream(
+                            buildSearchProductByBarcodeQuery(barcode)
+                    ),
+                    barcode
+                );
+    }
+
+    private MedipimProduct getMostMatchedMedipimProduct(List<MedipimProduct> medipimProducts, String barcode) {
+        /**
+         * We shoud remove products where the searched barcode is not present in product codes
+         * because we truncate the search to 7 characters, and it can bring us to wrong products
+         */
+        return medipimProducts
                 .stream()
+                .filter(p ->
+                    Objects.equals(p.cipOrAcl7(), barcode) ||
+                    Objects.equals(p.cip13(), barcode) ||
+                    Objects.equals(p.acl13(), barcode) ||
+                    CollectionUtils.emptyIfNull(p.ean()).contains(barcode)
+                )
                 .findFirst()
                 .orElse(null);
     }
