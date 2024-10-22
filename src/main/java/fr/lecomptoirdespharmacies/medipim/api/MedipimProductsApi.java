@@ -11,6 +11,7 @@ import fr.lecomptoirdespharmacies.medipim.api.query.products.Query;
 import fr.lecomptoirdespharmacies.medipim.api.query.products.QueryFilter;
 import fr.lecomptoirdespharmacies.medipim.api.query.products.QuerySorting;
 import com.fasterxml.jackson.databind.JsonNode;
+import fr.lecomptoirdespharmacies.medipim.exceptions.RateLimitException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -29,7 +30,11 @@ public class MedipimProductsApi extends MedipimApi {
 
     private List<MedipimProduct> streamToProducts(Response response) {
         if (!Arrays.asList(200, 204).contains(response.getStatus())) {
-            throw new RuntimeException(String.format("Medipim API returned status %s - %s", response.getStatus(), response.getBody()));
+            String message = String.format("Medipim API returned status %s - %s", response.getStatus(), response.getBody());
+            if (Objects.equals(response.getStatus(), 429)) {
+                throw new RateLimitException(message);
+            }
+            throw new RuntimeException(message);
         }
 
         List<JsonNode> results = this.readStream(response)
@@ -50,6 +55,10 @@ public class MedipimProductsApi extends MedipimApi {
                     .get()
                     .thenApply(response -> {
                         if (response.getStatus() != 200) {
+                            if (Objects.equals(response.getStatus(), 429)) {
+                                String message = String.format("Medipim API returned status %s - %s", response.getStatus(), response.getBody());
+                                throw new RateLimitException(message);
+                            }
                             // Product not found
                             return null;
                         }
@@ -91,7 +100,11 @@ public class MedipimProductsApi extends MedipimApi {
                     .get();
 
             if (response.getStatus() != 200) {
-                throw new RuntimeException(String.format("Medipim API returned status %s - %s", response.getStatus(), response.getBody()));
+                String message = String.format("Medipim API returned status %s - %s", response.getStatus(), response.getBody());
+                if (Objects.equals(response.getStatus(), 429)) {
+                    throw new RateLimitException(message);
+                }
+                throw new RuntimeException(message);
             }
 
             JsonNode jsonResponse = response.asJson();
@@ -111,7 +124,8 @@ public class MedipimProductsApi extends MedipimApi {
                     products
             );
 
-        } catch (InterruptedException | ExecutionException e) {
+        }
+        catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
     }
