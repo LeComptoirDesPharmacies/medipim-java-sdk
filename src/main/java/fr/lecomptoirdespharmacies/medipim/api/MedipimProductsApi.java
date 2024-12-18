@@ -232,7 +232,7 @@ public class MedipimProductsApi extends MedipimApi {
     }
 
     public List<MedipimProduct> getProductsByMediaIds(List<Long> mediaIds) {
-        return getProductsByMediaIds(mediaIds);
+        return getProductsByMediaIds(mediaIds, null);
     }
 
     public List<MedipimProduct> getProductsByMediaIds(List<Long> mediaIds, Duration timeout) {
