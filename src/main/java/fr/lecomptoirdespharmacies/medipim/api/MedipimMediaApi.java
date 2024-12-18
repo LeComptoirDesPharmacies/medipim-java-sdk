@@ -67,6 +67,10 @@ public class MedipimMediaApi extends MedipimApi {
         return postMediaQuery(buildGetModifiedPhotosSinceQuery(updatedAtGe), MedipimPhoto.class);
     }
 
+    public PaginatedResponse<MedipimPhoto> getModifiedPhotosSince(OffsetDateTime updatedAtGe, Duration timeout) {
+        return postMediaQuery(buildGetModifiedPhotosSinceQuery(updatedAtGe), MedipimPhoto.class, timeout);
+    }
+
     public JsonNode buildGetModifiedPhotosSinceQuery(OffsetDateTime updatedAtGe) {
 
         List<QueryFilter> filters = new ArrayList<>();
