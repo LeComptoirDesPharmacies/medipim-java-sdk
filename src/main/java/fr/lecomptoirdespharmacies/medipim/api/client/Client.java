@@ -1,5 +1,7 @@
 package fr.lecomptoirdespharmacies.medipim.api.client;
 
+import java.time.Duration;
+
 public interface Client {
 
     /**
@@ -8,8 +10,9 @@ public interface Client {
      * Promise<Response>}.
      *
      * @param url the URL to request
+     * @param timeout the timeout for the request
      * @return the request
      */
-    Request url(String url);
+    Request url(String url, Duration timeout);
 
 }

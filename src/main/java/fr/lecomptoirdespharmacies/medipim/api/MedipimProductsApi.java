@@ -1,5 +1,6 @@
 package fr.lecomptoirdespharmacies.medipim.api;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import fr.lecomptoirdespharmacies.medipim.api.client.Client;
 import fr.lecomptoirdespharmacies.medipim.api.client.Response;
 import fr.lecomptoirdespharmacies.medipim.api.entities.products.MedipimProduct;
@@ -10,11 +11,11 @@ import fr.lecomptoirdespharmacies.medipim.api.query.SortingValue;
 import fr.lecomptoirdespharmacies.medipim.api.query.products.Query;
 import fr.lecomptoirdespharmacies.medipim.api.query.products.QueryFilter;
 import fr.lecomptoirdespharmacies.medipim.api.query.products.QuerySorting;
-import com.fasterxml.jackson.databind.JsonNode;
 import fr.lecomptoirdespharmacies.medipim.exceptions.RateLimitException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,8 +50,12 @@ public class MedipimProductsApi extends MedipimApi {
     }
 
     public MedipimProduct searchProductById(String id) {
+        return searchProductById(id, null);
+    }
+
+    public MedipimProduct searchProductById(String id, Duration timeout) {
         try {
-            MedipimProduct product = this.createAuthenticatedRequest("/v4/products/find")
+            MedipimProduct product = this.createAuthenticatedRequest("/v4/products/find", timeout)
                     .addQueryParameter("id", id)
                     .get()
                     .thenApply(response -> {
@@ -76,8 +81,12 @@ public class MedipimProductsApi extends MedipimApi {
     }
 
     private List<MedipimProduct> postProductStream(JsonNode query) {
+        return postProductStream(query, null);
+    }
+
+    private List<MedipimProduct> postProductStream(JsonNode query, Duration timeout) {
         try {
-            List<MedipimProduct> products = this.createAuthenticatedRequest("/v4/products/stream")
+            List<MedipimProduct> products = this.createAuthenticatedRequest("/v4/products/stream", timeout)
                     .post(query)
                     .thenApply(this::streamToProducts)
                     .toCompletableFuture()
@@ -90,11 +99,13 @@ public class MedipimProductsApi extends MedipimApi {
         }
     }
 
-
-
     private PaginatedResponse<MedipimProduct> postProductsQuery(JsonNode query) {
+        return postProductsQuery(query, null);
+    }
+
+    private PaginatedResponse<MedipimProduct> postProductsQuery(JsonNode query, Duration timeout) {
         try {
-            Response response = this.createAuthenticatedRequest("/v4/products/query")
+            Response response = this.createAuthenticatedRequest("/v4/products/query", timeout)
                     .post(query)
                     .toCompletableFuture()
                     .get();

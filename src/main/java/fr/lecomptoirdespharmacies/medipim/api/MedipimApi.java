@@ -10,9 +10,10 @@ import fr.lecomptoirdespharmacies.medipim.api.client.Request;
 import fr.lecomptoirdespharmacies.medipim.api.client.Response;
 import org.openapitools.jackson.nullable.JsonNullableModule;
 
-
 import java.io.IOException;
-import java.util.*;
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 
 
@@ -42,8 +43,8 @@ public abstract class MedipimApi {
         this.password = password;
     }
 
-    protected Request createAuthenticatedRequest(String endpoint) {
-        return ws.url(baseUrl + endpoint).
+    protected Request createAuthenticatedRequest(String endpoint, Duration timeout) {
+        return ws.url(baseUrl + endpoint, timeout).
                 setAuth(this.username, this.password);
     }
 
