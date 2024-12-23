@@ -68,7 +68,7 @@ public class MedipimProductsApi extends MedipimApi {
                             return null;
                         }
                         JsonNode result = response.asJson().get("product");
-                        ;
+
                         return this.deserialize(result, MedipimProduct.class);
                     })
                     .toCompletableFuture()
