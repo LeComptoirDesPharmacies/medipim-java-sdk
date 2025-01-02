@@ -1,5 +1,6 @@
 package fr.lecomptoirdespharmacies.medipim.api;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import fr.lecomptoirdespharmacies.medipim.api.client.Client;
 import fr.lecomptoirdespharmacies.medipim.api.client.Response;
 import fr.lecomptoirdespharmacies.medipim.api.entities.media.MedipimMediaType;
@@ -10,8 +11,8 @@ import fr.lecomptoirdespharmacies.medipim.api.query.SortingValue;
 import fr.lecomptoirdespharmacies.medipim.api.query.media.Query;
 import fr.lecomptoirdespharmacies.medipim.api.query.media.QueryFilter;
 import fr.lecomptoirdespharmacies.medipim.api.query.media.QuerySorting;
-import com.fasterxml.jackson.databind.JsonNode;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +26,14 @@ public class MedipimMediaApi extends MedipimApi {
     }
 
 
-
     private <T> PaginatedResponse<T> postMediaQuery(JsonNode query, Class<T> toValueType) {
+        return postMediaQuery(query, toValueType, null);
+    }
+
+    private <T> PaginatedResponse<T> postMediaQuery(JsonNode query, Class<T> toValueType, Duration timeout) {
         try {
             Response response = this.createAuthenticatedRequest("/v4/media/query")
+                    .setRequestTimeout(timeout)
                     .post(query)
                     .toCompletableFuture()
                     .get();
@@ -46,7 +51,7 @@ public class MedipimMediaApi extends MedipimApi {
             long pageOffset = page.get("offset").asLong();
             long pageSize = page.get("size").asLong();
             boolean isExhaustive = totalRecord <= pageOffset + pageSize;
-            
+
             List<T> photos = this.deserializeList(results, toValueType);
 
             return new PaginatedResponse(
@@ -61,6 +66,10 @@ public class MedipimMediaApi extends MedipimApi {
 
     public PaginatedResponse<MedipimPhoto> getModifiedPhotosSince(OffsetDateTime updatedAtGe) {
         return postMediaQuery(buildGetModifiedPhotosSinceQuery(updatedAtGe), MedipimPhoto.class);
+    }
+
+    public PaginatedResponse<MedipimPhoto> getModifiedPhotosSince(OffsetDateTime updatedAtGe, Duration timeout) {
+        return postMediaQuery(buildGetModifiedPhotosSinceQuery(updatedAtGe), MedipimPhoto.class, timeout);
     }
 
     public JsonNode buildGetModifiedPhotosSinceQuery(OffsetDateTime updatedAtGe) {
