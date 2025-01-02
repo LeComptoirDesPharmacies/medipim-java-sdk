@@ -10,9 +10,8 @@ public interface Client {
      * Promise<Response>}.
      *
      * @param url the URL to request
-     * @param timeout the timeout for the request
      * @return the request
      */
-    Request url(String url, Duration timeout);
+    Request url(String url);
 
 }

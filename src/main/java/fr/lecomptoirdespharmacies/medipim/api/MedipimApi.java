@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 
@@ -43,9 +44,9 @@ public abstract class MedipimApi {
         this.password = password;
     }
 
-    protected Request createAuthenticatedRequest(String endpoint, Duration timeout) {
-        return ws.url(baseUrl + endpoint, timeout).
-                setAuth(this.username, this.password);
+    protected Request createAuthenticatedRequest(String endpoint) {
+        return ws.url(baseUrl + endpoint)
+                .setAuth(this.username, this.password);
     }
 
     protected <T> T deserialize(Object fromValue, Class<T> toValueType) {

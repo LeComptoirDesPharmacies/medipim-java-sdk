@@ -55,7 +55,8 @@ public class MedipimProductsApi extends MedipimApi {
 
     public MedipimProduct searchProductById(String id, Duration timeout) {
         try {
-            MedipimProduct product = this.createAuthenticatedRequest("/v4/products/find", timeout)
+            MedipimProduct product = this.createAuthenticatedRequest("/v4/products/find")
+                    .setRequestTimeout(timeout)
                     .addQueryParameter("id", id)
                     .get()
                     .thenApply(response -> {
@@ -87,7 +88,8 @@ public class MedipimProductsApi extends MedipimApi {
 
     private List<MedipimProduct> postProductStream(JsonNode query, Duration timeout) {
         try {
-            List<MedipimProduct> products = this.createAuthenticatedRequest("/v4/products/stream", timeout)
+            List<MedipimProduct> products = this.createAuthenticatedRequest("/v4/products/stream")
+                    .setRequestTimeout(timeout)
                     .post(query)
                     .thenApply(this::streamToProducts)
                     .toCompletableFuture()
@@ -106,7 +108,8 @@ public class MedipimProductsApi extends MedipimApi {
 
     private PaginatedResponse<MedipimProduct> postProductsQuery(JsonNode query, Duration timeout) {
         try {
-            Response response = this.createAuthenticatedRequest("/v4/products/query", timeout)
+            Response response = this.createAuthenticatedRequest("/v4/products/query")
+                    .setRequestTimeout(timeout)
                     .post(query)
                     .toCompletableFuture()
                     .get();

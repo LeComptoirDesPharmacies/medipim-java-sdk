@@ -32,7 +32,8 @@ public class MedipimMediaApi extends MedipimApi {
 
     private <T> PaginatedResponse<T> postMediaQuery(JsonNode query, Class<T> toValueType, Duration timeout) {
         try {
-            Response response = this.createAuthenticatedRequest("/v4/media/query", timeout)
+            Response response = this.createAuthenticatedRequest("/v4/media/query")
+                    .setRequestTimeout(timeout)
                     .post(query)
                     .toCompletableFuture()
                     .get();
