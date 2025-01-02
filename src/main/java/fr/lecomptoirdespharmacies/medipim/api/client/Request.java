@@ -2,6 +2,7 @@ package fr.lecomptoirdespharmacies.medipim.api.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 
 public interface Request {
@@ -39,4 +40,11 @@ public interface Request {
      * @return a promise to the response
      */
     CompletionStage<Response> post(JsonNode body);
+
+    /**
+     * Add a custom timeout for this request.
+     * @param timeout value for this request
+     * @return the modified Request.
+     */
+    Request setRequestTimeout(Duration timeout);
 }

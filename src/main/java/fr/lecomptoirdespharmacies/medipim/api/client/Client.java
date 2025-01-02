@@ -1,5 +1,7 @@
 package fr.lecomptoirdespharmacies.medipim.api.client;
 
+import java.time.Duration;
+
 public interface Client {
 
     /**
