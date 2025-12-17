@@ -9,4 +9,9 @@ public class MedipimException extends RuntimeException {
     public MedipimException(Throwable cause) {
         super(cause);
     }
+
+    public MedipimException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }
