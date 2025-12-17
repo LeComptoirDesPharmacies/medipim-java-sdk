@@ -11,12 +11,16 @@ import fr.lecomptoirdespharmacies.medipim.api.query.SortingValue;
 import fr.lecomptoirdespharmacies.medipim.api.query.media.Query;
 import fr.lecomptoirdespharmacies.medipim.api.query.media.QueryFilter;
 import fr.lecomptoirdespharmacies.medipim.api.query.media.QuerySorting;
+import fr.lecomptoirdespharmacies.medipim.exceptions.MedipimException;
+import fr.lecomptoirdespharmacies.medipim.exceptions.RateLimitException;
+import fr.lecomptoirdespharmacies.medipim.exceptions.UnexpectedStatusCodeException;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 public class MedipimMediaApi extends MedipimApi {
@@ -39,7 +43,11 @@ public class MedipimMediaApi extends MedipimApi {
                     .get();
 
             if (response.getStatus() != 200) {
-                throw new RuntimeException(String.format("Medipim API returned status %s - %s", response.getStatus(), response.getBody()));
+                String message = String.format("Medipim API returned status %s - %s", response.getStatus(), response.getBody());
+                if (Objects.equals(response.getStatus(), 429)) {
+                    throw new RateLimitException(message);
+                }
+                throw new UnexpectedStatusCodeException(message);
             }
 
             JsonNode jsonResponse = response.asJson();
@@ -60,7 +68,7 @@ public class MedipimMediaApi extends MedipimApi {
             );
 
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
+            throw new MedipimException(e);
         }
     }
 

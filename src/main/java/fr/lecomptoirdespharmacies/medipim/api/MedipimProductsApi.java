@@ -11,7 +11,9 @@ import fr.lecomptoirdespharmacies.medipim.api.query.SortingValue;
 import fr.lecomptoirdespharmacies.medipim.api.query.products.Query;
 import fr.lecomptoirdespharmacies.medipim.api.query.products.QueryFilter;
 import fr.lecomptoirdespharmacies.medipim.api.query.products.QuerySorting;
+import fr.lecomptoirdespharmacies.medipim.exceptions.MedipimException;
 import fr.lecomptoirdespharmacies.medipim.exceptions.RateLimitException;
+import fr.lecomptoirdespharmacies.medipim.exceptions.UnexpectedStatusCodeException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -35,7 +37,7 @@ public class MedipimProductsApi extends MedipimApi {
             if (Objects.equals(response.getStatus(), 429)) {
                 throw new RateLimitException(message);
             }
-            throw new RuntimeException(message);
+            throw new UnexpectedStatusCodeException(message);
         }
 
         List<JsonNode> results = this.readStream(response)
@@ -78,7 +80,7 @@ public class MedipimProductsApi extends MedipimApi {
             return product;
 
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
+            throw new MedipimException(e);
         }
     }
 
@@ -98,7 +100,7 @@ public class MedipimProductsApi extends MedipimApi {
             return products;
 
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
+            throw new MedipimException(e);
         }
     }
 
@@ -119,7 +121,7 @@ public class MedipimProductsApi extends MedipimApi {
                 if (Objects.equals(response.getStatus(), 429)) {
                     throw new RateLimitException(message);
                 }
-                throw new RuntimeException(message);
+                throw new UnexpectedStatusCodeException(message);
             }
 
             JsonNode jsonResponse = response.asJson();
@@ -140,7 +142,7 @@ public class MedipimProductsApi extends MedipimApi {
             );
 
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
+            throw new MedipimException(e);
         }
     }
 
