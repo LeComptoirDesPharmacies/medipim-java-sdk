@@ -8,6 +8,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import fr.lecomptoirdespharmacies.medipim.api.client.Client;
 import fr.lecomptoirdespharmacies.medipim.api.client.Request;
 import fr.lecomptoirdespharmacies.medipim.api.client.Response;
+import fr.lecomptoirdespharmacies.medipim.exceptions.InvalidResponseException;
 import org.openapitools.jackson.nullable.JsonNullableModule;
 
 import java.io.IOException;
@@ -69,7 +70,7 @@ public abstract class MedipimApi {
                     try {
                         return objectMapper.readTree(responsePart);
                     } catch (IOException e) {
-                        throw new RuntimeException("Error parsing JSON from WS response wsBody", e);
+                        throw new InvalidResponseException("Error parsing JSON from WS response wsBody", e);
                     }
                 });
     }
