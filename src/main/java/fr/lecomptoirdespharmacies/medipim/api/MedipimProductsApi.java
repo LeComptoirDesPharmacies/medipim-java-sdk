@@ -105,14 +105,21 @@ public class MedipimProductsApi extends MedipimApi {
     }
 
     private PaginatedResponse<MedipimProduct> postProductsQuery(JsonNode query) {
-        return postProductsQuery(query, null);
+        return postProductsQuery(query, null, false);
     }
 
     private PaginatedResponse<MedipimProduct> postProductsQuery(JsonNode query, Duration timeout) {
+        return postProductsQuery(query, timeout, false);
+    }
+
+    private PaginatedResponse<MedipimProduct> postProductsQuery(JsonNode query, Duration timeout, boolean compact) {
         try {
-            Response response = this.createAuthenticatedRequest("/v4/products/query")
-                    .setRequestTimeout(timeout)
-                    .post(query)
+            var request = this.createAuthenticatedRequest("/v4/products/query")
+                    .setRequestTimeout(timeout);
+            if (compact) {
+                request.addQueryParameter("compact", "true");
+            }
+            Response response = request.post(query)
                     .toCompletableFuture()
                     .get();
 
@@ -267,6 +274,19 @@ public class MedipimProductsApi extends MedipimApi {
     public PaginatedResponse<MedipimProduct> getModifiedProductSince(OffsetDateTime updatedAtGe,
                                                                      boolean containMedia, Duration timeout) {
         return postProductsQuery(buildGetModifiedProductSinceQuery(updatedAtGe, containMedia), timeout);
+    }
+
+    public PaginatedResponse<MedipimProduct> getModifiedProductSince(OffsetDateTime updatedAtGe,
+                                                                     boolean containMedia,
+                                                                     boolean compact) {
+        return getModifiedProductSince(updatedAtGe, containMedia, null, compact);
+    }
+
+    public PaginatedResponse<MedipimProduct> getModifiedProductSince(OffsetDateTime updatedAtGe,
+                                                                     boolean containMedia,
+                                                                     Duration timeout,
+                                                                     boolean compact) {
+        return postProductsQuery(buildGetModifiedProductSinceQuery(updatedAtGe, containMedia), timeout, compact);
     }
 
     public JsonNode buildGetModifiedProductSinceQuery(OffsetDateTime updatedAtGe,
