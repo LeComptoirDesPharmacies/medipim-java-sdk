@@ -266,6 +266,32 @@ public class MedipimProductsApi extends MedipimApi {
         return postProductStream(this.serialize(query), timeout);
     }
 
+    public PaginatedResponse<MedipimProduct> queryProductsByMediaIds(List<Long> mediaIds, QueryPage page) {
+        return queryProductsByMediaIds(mediaIds, page, null, false);
+    }
+
+    public PaginatedResponse<MedipimProduct> queryProductsByMediaIds(List<Long> mediaIds, QueryPage page, boolean compact) {
+        return queryProductsByMediaIds(mediaIds, page, null, compact);
+    }
+
+    public PaginatedResponse<MedipimProduct> queryProductsByMediaIds(List<Long> mediaIds, QueryPage page, Duration timeout, boolean compact) {
+        QueryFilter filter = new QueryFilter.QueryFilterBuilder()
+                .media(mediaIds)
+                .build();
+
+        QuerySorting sorting = new QuerySorting.QuerySortingBuilder()
+                .createdAt(SortingValue.ASC)
+                .build();
+
+        Query query = new Query(
+                filter,
+                sorting,
+                page
+        );
+
+        return postProductsQuery(this.serialize(query), timeout, compact);
+    }
+
     public PaginatedResponse<MedipimProduct> getModifiedProductSince(OffsetDateTime updatedAtGe,
                                                                      boolean containMedia) {
         return getModifiedProductSince(updatedAtGe, containMedia, null);
