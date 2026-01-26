@@ -292,27 +292,6 @@ public class MedipimProductsApi extends MedipimApi {
         return postProductsQuery(this.serialize(query), timeout, compact);
     }
 
-    public List<MedipimProduct> getAllProductsByMediaIds(List<Long> mediaIds, boolean compact) {
-        return getAllProductsByMediaIds(mediaIds, compact, null);
-    }
-
-    public List<MedipimProduct> getAllProductsByMediaIds(List<Long> mediaIds, boolean compact, Duration timeout) {
-        List<MedipimProduct> allProducts = new ArrayList<>();
-        int pageSize = 250;
-        int offset = 0;
-        boolean isExhaustive = false;
-
-        while (!isExhaustive) {
-            QueryPage page = new QueryPage(offset, pageSize);
-            PaginatedResponse<MedipimProduct> response = queryProductsByMediaIds(mediaIds, page, timeout, compact);
-            allProducts.addAll(response.results());
-            isExhaustive = response.isExhaustive();
-            offset += pageSize;
-        }
-
-        return allProducts;
-    }
-
     public PaginatedResponse<MedipimProduct> getModifiedProductSince(OffsetDateTime updatedAtGe,
                                                                      boolean containMedia) {
         return getModifiedProductSince(updatedAtGe, containMedia, null);
