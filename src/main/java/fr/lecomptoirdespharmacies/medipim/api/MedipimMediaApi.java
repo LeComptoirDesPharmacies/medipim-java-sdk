@@ -115,7 +115,7 @@ public class MedipimMediaApi extends MedipimApi {
                 .touchedAt(SortingValue.ASC)
                 .build();
 
-        QueryPage effectivePage = page != null ? page : new QueryPage(0, 250);
+        QueryPage effectivePage = page != null ? page : new QueryPage(0, QueryPage.PageSize.SIZE_250);
 
         Query query = new Query(
                 filter,

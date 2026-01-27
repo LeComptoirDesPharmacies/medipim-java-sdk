@@ -1,13 +1,21 @@
 package fr.lecomptoirdespharmacies.medipim.api.query;
 
-import java.util.Set;
+public record QueryPage(int no, PageSize size) {
 
-public record QueryPage(int no, int size) {
-    private static final Set<Integer> VALID_SIZES = Set.of(10, 50, 100, 250);
+    public enum PageSize {
+        SIZE_10(10),
+        SIZE_50(50),
+        SIZE_100(100),
+        SIZE_250(250);
 
-    public QueryPage {
-        if (!VALID_SIZES.contains(size)) {
-            throw new IllegalArgumentException("size must be one of: " + VALID_SIZES);
+        private final int value;
+
+        PageSize(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
         }
     }
 }

@@ -345,7 +345,7 @@ public class MedipimProductsApi extends MedipimApi {
                 .touchedAt(SortingValue.ASC)
                 .build();
 
-        QueryPage page = new QueryPage(0, 250);
+        QueryPage page = new QueryPage(0, QueryPage.PageSize.SIZE_250);
 
         Query query = new Query(
                 filter,
