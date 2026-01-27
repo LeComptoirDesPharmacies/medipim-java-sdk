@@ -1,5 +1,7 @@
 package fr.lecomptoirdespharmacies.medipim.api.query;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public record QueryPage(int no, PageSize size) {
 
     public enum PageSize {
@@ -14,6 +16,7 @@ public record QueryPage(int no, PageSize size) {
             this.value = value;
         }
 
+        @JsonValue
         public int getValue() {
             return value;
         }
