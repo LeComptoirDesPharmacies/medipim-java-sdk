@@ -188,42 +188,44 @@ public class MedipimProductsApi extends MedipimApi {
 
         List<QueryFilter> barcodeFilters = new ArrayList<>();
 
+        if (StringUtils.isNumeric(barcode)) {
+            // CIP13
+            if (StringUtils.startsWith(barcode, "3400") &&
+                    StringUtils.length(barcode) >= 13) {
+                barcodeFilters.add(
+                        new QueryFilter.QueryFilterBuilder()
+                                .cip13(StringUtils.left(barcode, 13))
+                                .build()
+                );
+            }
 
-        if (StringUtils.isNumeric(barcode) &&
-                StringUtils.startsWith(barcode, "3400") &&
-                StringUtils.length(barcode) >= 13) {
+            // ACL13
+            if (StringUtils.startsWith(barcode, "3401") &&
+                    StringUtils.length(barcode) >= 13
+            ) {
+                barcodeFilters.add(
+                        new QueryFilter.QueryFilterBuilder()
+                                .acl13(StringUtils.left(barcode, 13))
+                                .build()
+                );
+            }
+
+            // EAN
             barcodeFilters.add(
-                    new QueryFilter.QueryFilterBuilder()
-                            .cip13(StringUtils.left(barcode, 13))
-                            .build()
-            );
-        }
+                        new QueryFilter.QueryFilterBuilder()
+                                .ean(barcode)
+                                .build()
+                );
 
-        if (StringUtils.isNumeric(barcode) &&
-                StringUtils.startsWith(barcode, "3401") &&
-                StringUtils.length(barcode) >= 13
-        ) {
-            barcodeFilters.add(
-                    new QueryFilter.QueryFilterBuilder()
-                            .acl13(StringUtils.left(barcode, 13))
-                            .build()
-            );
-        }
-
-        barcodeFilters.add(
-                new QueryFilter.QueryFilterBuilder()
-                        .ean(barcode)
-                        .build()
-        );
-
-        if (StringUtils.isNumeric(barcode) &&
-                !Objects.equals(barcode, "0")// cipOrAcl7 consider the value '0' as empty value. (See : LDS-3337)
-        ) {
-            barcodeFilters.add(
-                    new QueryFilter.QueryFilterBuilder()
-                            .cipOrAcl7(StringUtils.left(barcode, 7))
-                            .build()
-            );
+            // CIP7/ACL7
+            if (!Objects.equals(barcode, "0")// cipOrAcl7 consider the value '0' as empty value. (See : LDS-3337)
+            ) {
+                barcodeFilters.add(
+                        new QueryFilter.QueryFilterBuilder()
+                                .cipOrAcl7(StringUtils.left(barcode, 7))
+                                .build()
+                );
+            }
         }
 
 
