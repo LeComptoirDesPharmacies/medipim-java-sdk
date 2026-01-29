@@ -19,10 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -158,13 +155,15 @@ public class MedipimProductsApi extends MedipimApi {
     }
 
     public MedipimProduct searchProductByBarcode(String barcode, Duration timeout) {
-        return getMostMatchedMedipimProduct(
-                postProductStream(
-                        buildSearchProductByBarcodeQuery(barcode),
-                        timeout
-                ),
-                barcode
-        );
+        return buildSearchProductByBarcodeQuery(barcode)
+                .map(jsonNode -> getMostMatchedMedipimProduct(
+                        postProductStream(
+                                jsonNode,
+                                timeout
+                        ),
+                        barcode
+                ))
+                .orElse(null);
     }
 
     private MedipimProduct getMostMatchedMedipimProduct(List<MedipimProduct> medipimProducts, String barcode) {
@@ -184,7 +183,7 @@ public class MedipimProductsApi extends MedipimApi {
                 .orElse(null);
     }
 
-    private JsonNode buildSearchProductByBarcodeQuery(String barcode) {
+    private Optional<JsonNode> buildSearchProductByBarcodeQuery(String barcode) {
 
         List<QueryFilter> barcodeFilters = new ArrayList<>();
 
@@ -228,6 +227,9 @@ public class MedipimProductsApi extends MedipimApi {
             }
         }
 
+        if (CollectionUtils.isEmpty(barcodeFilters)) {
+            return Optional.empty();
+        }
 
         QueryFilter filter = new QueryFilter.QueryFilterBuilder()
                 .or(barcodeFilters).build();
@@ -242,7 +244,7 @@ public class MedipimProductsApi extends MedipimApi {
                 null
         );
 
-        return this.serialize(query);
+        return Optional.of(this.serialize(query));
     }
 
     public List<MedipimProduct> getProductsByMediaIds(List<Long> mediaIds) {
