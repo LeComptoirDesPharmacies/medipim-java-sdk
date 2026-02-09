@@ -19,10 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -105,14 +102,21 @@ public class MedipimProductsApi extends MedipimApi {
     }
 
     private PaginatedResponse<MedipimProduct> postProductsQuery(JsonNode query) {
-        return postProductsQuery(query, null);
+        return postProductsQuery(query, null, false);
     }
 
     private PaginatedResponse<MedipimProduct> postProductsQuery(JsonNode query, Duration timeout) {
+        return postProductsQuery(query, timeout, false);
+    }
+
+    private PaginatedResponse<MedipimProduct> postProductsQuery(JsonNode query, Duration timeout, boolean compact) {
         try {
-            Response response = this.createAuthenticatedRequest("/v4/products/query")
-                    .setRequestTimeout(timeout)
-                    .post(query)
+            var request = this.createAuthenticatedRequest("/v4/products/query")
+                    .setRequestTimeout(timeout);
+            if (compact) {
+                request.addQueryParameter("compact", "true");
+            }
+            Response response = request.post(query)
                     .toCompletableFuture()
                     .get();
 
@@ -151,13 +155,15 @@ public class MedipimProductsApi extends MedipimApi {
     }
 
     public MedipimProduct searchProductByBarcode(String barcode, Duration timeout) {
-        return getMostMatchedMedipimProduct(
-                postProductStream(
-                        buildSearchProductByBarcodeQuery(barcode),
-                        timeout
-                ),
-                barcode
-        );
+        return buildSearchProductByBarcodeQuery(barcode)
+                .map(jsonNode -> getMostMatchedMedipimProduct(
+                        postProductStream(
+                                jsonNode,
+                                timeout
+                        ),
+                        barcode
+                ))
+                .orElse(null);
     }
 
     private MedipimProduct getMostMatchedMedipimProduct(List<MedipimProduct> medipimProducts, String barcode) {
@@ -177,48 +183,53 @@ public class MedipimProductsApi extends MedipimApi {
                 .orElse(null);
     }
 
-    private JsonNode buildSearchProductByBarcodeQuery(String barcode) {
+    private Optional<JsonNode> buildSearchProductByBarcodeQuery(String barcode) {
 
         List<QueryFilter> barcodeFilters = new ArrayList<>();
 
+        if (StringUtils.isNumeric(barcode)) {
+            // CIP13
+            if (StringUtils.startsWith(barcode, "3400") &&
+                    StringUtils.length(barcode) >= 13) {
+                barcodeFilters.add(
+                        new QueryFilter.QueryFilterBuilder()
+                                .cip13(StringUtils.left(barcode, 13))
+                                .build()
+                );
+            }
 
-        if (StringUtils.isNumeric(barcode) &&
-                StringUtils.startsWith(barcode, "3400") &&
-                StringUtils.length(barcode) >= 13) {
+            // ACL13
+            if (StringUtils.startsWith(barcode, "3401") &&
+                    StringUtils.length(barcode) >= 13
+            ) {
+                barcodeFilters.add(
+                        new QueryFilter.QueryFilterBuilder()
+                                .acl13(StringUtils.left(barcode, 13))
+                                .build()
+                );
+            }
+
+            // EAN
             barcodeFilters.add(
-                    new QueryFilter.QueryFilterBuilder()
-                            .cip13(StringUtils.left(barcode, 13))
-                            .build()
-            );
+                        new QueryFilter.QueryFilterBuilder()
+                                .ean(barcode)
+                                .build()
+                );
+
+            // CIP7/ACL7
+            if (!Objects.equals(barcode, "0")// cipOrAcl7 consider the value '0' as empty value. (See : LDS-3337)
+            ) {
+                barcodeFilters.add(
+                        new QueryFilter.QueryFilterBuilder()
+                                .cipOrAcl7(StringUtils.left(barcode, 7))
+                                .build()
+                );
+            }
         }
 
-        if (StringUtils.isNumeric(barcode) &&
-                StringUtils.startsWith(barcode, "3401") &&
-                StringUtils.length(barcode) >= 13
-        ) {
-            barcodeFilters.add(
-                    new QueryFilter.QueryFilterBuilder()
-                            .acl13(StringUtils.left(barcode, 13))
-                            .build()
-            );
+        if (CollectionUtils.isEmpty(barcodeFilters)) {
+            return Optional.empty();
         }
-
-        barcodeFilters.add(
-                new QueryFilter.QueryFilterBuilder()
-                        .ean(barcode)
-                        .build()
-        );
-
-        if (StringUtils.isNumeric(barcode) &&
-                !Objects.equals(barcode, "0")// cipOrAcl7 consider the value '0' as empty value. (See : LDS-3337)
-        ) {
-            barcodeFilters.add(
-                    new QueryFilter.QueryFilterBuilder()
-                            .cipOrAcl7(StringUtils.left(barcode, 7))
-                            .build()
-            );
-        }
-
 
         QueryFilter filter = new QueryFilter.QueryFilterBuilder()
                 .or(barcodeFilters).build();
@@ -233,7 +244,7 @@ public class MedipimProductsApi extends MedipimApi {
                 null
         );
 
-        return this.serialize(query);
+        return Optional.of(this.serialize(query));
     }
 
     public List<MedipimProduct> getProductsByMediaIds(List<Long> mediaIds) {
@@ -259,6 +270,32 @@ public class MedipimProductsApi extends MedipimApi {
         return postProductStream(this.serialize(query), timeout);
     }
 
+    public PaginatedResponse<MedipimProduct> queryProductsByMediaIds(List<Long> mediaIds, QueryPage page) {
+        return queryProductsByMediaIds(mediaIds, page, null, false);
+    }
+
+    public PaginatedResponse<MedipimProduct> queryProductsByMediaIds(List<Long> mediaIds, QueryPage page, boolean compact) {
+        return queryProductsByMediaIds(mediaIds, page, null, compact);
+    }
+
+    public PaginatedResponse<MedipimProduct> queryProductsByMediaIds(List<Long> mediaIds, QueryPage page, Duration timeout, boolean compact) {
+        QueryFilter filter = new QueryFilter.QueryFilterBuilder()
+                .media(mediaIds)
+                .build();
+
+        QuerySorting sorting = new QuerySorting.QuerySortingBuilder()
+                .createdAt(SortingValue.ASC)
+                .build();
+
+        Query query = new Query(
+                filter,
+                sorting,
+                page
+        );
+
+        return postProductsQuery(this.serialize(query), timeout, compact);
+    }
+
     public PaginatedResponse<MedipimProduct> getModifiedProductSince(OffsetDateTime updatedAtGe,
                                                                      boolean containMedia) {
         return getModifiedProductSince(updatedAtGe, containMedia, null);
@@ -267,6 +304,19 @@ public class MedipimProductsApi extends MedipimApi {
     public PaginatedResponse<MedipimProduct> getModifiedProductSince(OffsetDateTime updatedAtGe,
                                                                      boolean containMedia, Duration timeout) {
         return postProductsQuery(buildGetModifiedProductSinceQuery(updatedAtGe, containMedia), timeout);
+    }
+
+    public PaginatedResponse<MedipimProduct> getModifiedProductSince(OffsetDateTime updatedAtGe,
+                                                                     boolean containMedia,
+                                                                     boolean compact) {
+        return getModifiedProductSince(updatedAtGe, containMedia, null, compact);
+    }
+
+    public PaginatedResponse<MedipimProduct> getModifiedProductSince(OffsetDateTime updatedAtGe,
+                                                                     boolean containMedia,
+                                                                     Duration timeout,
+                                                                     boolean compact) {
+        return postProductsQuery(buildGetModifiedProductSinceQuery(updatedAtGe, containMedia), timeout, compact);
     }
 
     public JsonNode buildGetModifiedProductSinceQuery(OffsetDateTime updatedAtGe,
@@ -299,7 +349,7 @@ public class MedipimProductsApi extends MedipimApi {
                 .touchedAt(SortingValue.ASC)
                 .build();
 
-        QueryPage page = new QueryPage(0, 250);
+        QueryPage page = new QueryPage(0, QueryPage.PageSize.SIZE_250);
 
         Query query = new Query(
                 filter,

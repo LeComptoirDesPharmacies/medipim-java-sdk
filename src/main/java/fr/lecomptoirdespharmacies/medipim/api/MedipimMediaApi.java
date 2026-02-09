@@ -73,14 +73,22 @@ public class MedipimMediaApi extends MedipimApi {
     }
 
     public PaginatedResponse<MedipimPhoto> getModifiedPhotosSince(OffsetDateTime updatedAtGe) {
-        return postMediaQuery(buildGetModifiedPhotosSinceQuery(updatedAtGe), MedipimPhoto.class);
+        return getModifiedPhotosSince(updatedAtGe, null, null);
     }
 
     public PaginatedResponse<MedipimPhoto> getModifiedPhotosSince(OffsetDateTime updatedAtGe, Duration timeout) {
-        return postMediaQuery(buildGetModifiedPhotosSinceQuery(updatedAtGe), MedipimPhoto.class, timeout);
+        return getModifiedPhotosSince(updatedAtGe, null, timeout);
     }
 
-    public JsonNode buildGetModifiedPhotosSinceQuery(OffsetDateTime updatedAtGe) {
+    public PaginatedResponse<MedipimPhoto> getModifiedPhotosSince(OffsetDateTime updatedAtGe, QueryPage page) {
+        return getModifiedPhotosSince(updatedAtGe, page, null);
+    }
+
+    public PaginatedResponse<MedipimPhoto> getModifiedPhotosSince(OffsetDateTime updatedAtGe, QueryPage page, Duration timeout) {
+        return postMediaQuery(buildGetModifiedPhotosSinceQuery(updatedAtGe, page), MedipimPhoto.class, timeout);
+    }
+
+    public JsonNode buildGetModifiedPhotosSinceQuery(OffsetDateTime updatedAtGe, QueryPage page) {
 
         List<QueryFilter> filters = new ArrayList<>();
 
@@ -107,12 +115,12 @@ public class MedipimMediaApi extends MedipimApi {
                 .touchedAt(SortingValue.ASC)
                 .build();
 
-        QueryPage page = new QueryPage(0, 250);
+        QueryPage effectivePage = page != null ? page : new QueryPage(0, QueryPage.PageSize.SIZE_250);
 
         Query query = new Query(
                 filter,
                 sorting,
-                page
+                effectivePage
         );
 
         return this.serialize(query);
