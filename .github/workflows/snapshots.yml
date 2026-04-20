@@ -13,6 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git fetch --tags --force origin
       - name: Set up JDK 21 for x64
         uses: actions/setup-java@v3
         with:
@@ -24,7 +27,17 @@ jobs:
           server-password: MAVEN_PASSWORD
           gpg-private-key: ${{ secrets.GPG_SECRET_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
-      - name: Run the Maven verify phase
+      - name: Inject snapshot version derived from latest tag
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          BASE="${LATEST_TAG#v}"
+          MAJOR=$(echo "$BASE" | cut -d. -f1)
+          MINOR=$(echo "$BASE" | cut -d. -f2)
+          PATCH=$(echo "$BASE" | cut -d. -f3)
+          NEXT_PATCH=$((PATCH + 1))
+          VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}-SNAPSHOT"
+          mvn versions:set -DnewVersion="$VERSION" -DgenerateBackupPoms=false
+      - name: Run the Maven deploy phase
         run: mvn --batch-mode deploy
         env:
           MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
