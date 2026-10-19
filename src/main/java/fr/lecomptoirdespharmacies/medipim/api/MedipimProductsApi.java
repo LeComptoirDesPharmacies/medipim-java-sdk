@@ -59,13 +59,20 @@ public class MedipimProductsApi extends MedipimApi {
                     .addQueryParameter("id", id)
                     .get()
                     .thenApply(response -> {
+                        if (response.getStatus() == 404) {
+                            // Product not found : the only status Medipim uses for an unknown id (error code 'not_found')
+                            return null;
+                        }
                         if (response.getStatus() != 200) {
+                            /*
+                             * Any other status is a failure, not an absence : a 5xx during a Medipim outage must not
+                             * be read as "product deleted", or callers would detach their product from Medipim.
+                             */
+                            String message = String.format("Medipim API returned status %s - %s", response.getStatus(), response.getBody());
                             if (Objects.equals(response.getStatus(), 429)) {
-                                String message = String.format("Medipim API returned status %s - %s", response.getStatus(), response.getBody());
                                 throw new RateLimitException(message);
                             }
-                            // Product not found
-                            return null;
+                            throw new UnexpectedStatusCodeException(message);
                         }
                         JsonNode result = response.asJson().get("product");
 
