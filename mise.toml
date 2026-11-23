@@ -1,0 +1,23 @@
+min_version = "2026.10"
+
+[settings]
+# Same policy as pnpm minimumReleaseAge: never resolve a tool version
+# published less than 3 days ago (exact pins are not filtered).
+minimum_release_age = "3d"
+
+# Versions: java from pom.xml (maven.compiler.source 21)
+[tools]
+java = "temurin-21"
+maven = "3.9"
+
+[tasks.install]
+description = "Build and install the jar into ~/.m2, for the projects that depend on it"
+run = "mvn -DskipTests install"
+
+[tasks.build]
+description = "Build the jar, without tests"
+run = "mvn -DskipTests package"
+
+[tasks.test]
+description = "Run unit tests"
+run = "mvn test"
